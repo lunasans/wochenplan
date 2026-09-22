@@ -47,6 +47,13 @@ android {
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
+            // Der Anthropic-SDK bringt Apache HttpComponents mit. Deren Jars
+            // tragen alle dieselben Metadateien, die beim Zusammenfuehren
+            // kollidieren; fuer die App haben sie keine Bedeutung.
+            excludes += "/META-INF/DEPENDENCIES"
+            excludes += "/META-INF/INDEX.LIST"
+            excludes += "/META-INF/LICENSE*"
+            excludes += "/META-INF/NOTICE*"
         }
     }
 }
