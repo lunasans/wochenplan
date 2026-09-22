@@ -1,0 +1,19 @@
+# Gradle
+.gradle/
+build/
+captures/
+.cxx/
+
+# Android Studio / IntelliJ
+*.iml
+.idea/
+local.properties
+
+# Signaturen und Schluessel gehoeren nicht ins Repository
+*.jks
+*.keystore
+keystore.properties
+
+# Sonstiges
+.DS_Store
+*.log
