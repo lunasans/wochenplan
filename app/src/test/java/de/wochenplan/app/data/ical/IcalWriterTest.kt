@@ -39,7 +39,7 @@ class IcalWriterTest {
         assertTrue(ics.contains("DTSTART;TZID=Europe/Berlin:20260922T090000"))
         assertTrue(ics.contains("DTEND;TZID=Europe/Berlin:20260922T103000"))
         assertTrue(ics.contains("SUMMARY:Besprechung"))
-        assertTrue(ics.contains("DESCRIPTION:Mit Notiz\; und Semikolon"))
+        assertTrue(ics.contains("DESCRIPTION:Mit Notiz\\; und Semikolon"))
         assertTrue(ics.contains("DTSTAMP:"))
     }
 

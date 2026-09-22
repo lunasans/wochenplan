@@ -38,7 +38,7 @@ class IcalParserTest {
         val original = "Zeile 1\nHalbsatz; Komma, Backslash \\ Ende"
         val escaped = IcalText.escape(original)
         assertTrue(escaped.contains("\\n"))
-        assertTrue(escaped.contains("\;"))
+        assertTrue(escaped.contains("\\;"))
         assertEquals(original, IcalText.unescape(escaped))
     }
 

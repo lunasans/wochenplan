@@ -36,6 +36,8 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import android.app.Activity
+import android.content.Context
+import android.content.ContextWrapper
 import android.view.WindowManager
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -74,7 +76,7 @@ fun FocusScreen(
 
     // Auf Wunsch bleibt der Bildschirm waehrend eines Abschnitts an.
     DisposableEffect(state.keepScreenOn, state.timer.running) {
-        val window = (view.context as? Activity)?.window
+        val window = view.context.findActivity()?.window
         if (state.keepScreenOn && state.timer.running) {
             window?.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         }
@@ -180,6 +182,13 @@ fun FocusScreen(
             Spacer(Modifier.height(24.dp))
         }
     }
+}
+
+/** Sucht die Activity, auch wenn der Context in Wrapper eingepackt ist. */
+private tailrec fun Context.findActivity(): Activity? = when (this) {
+    is Activity -> this
+    is ContextWrapper -> baseContext.findActivity()
+    else -> null
 }
 
 @Composable
