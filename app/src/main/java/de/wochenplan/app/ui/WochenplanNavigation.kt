@@ -27,6 +27,7 @@ import androidx.navigation.navArgument
 import de.wochenplan.app.ui.event.EventEditScreen
 import de.wochenplan.app.ui.event.EventEditViewModel
 import de.wochenplan.app.ui.focus.FocusScreen
+import de.wochenplan.app.ui.plan.PlanScreen
 import de.wochenplan.app.ui.settings.SettingsScreen
 import de.wochenplan.app.ui.tasks.TaskScreen
 import de.wochenplan.app.ui.templates.TemplateScreen
@@ -40,6 +41,7 @@ object Routes {
     const val FOCUS = "focus"
     const val SETTINGS = "settings"
     const val TEMPLATES = "templates"
+    const val PLAN = "plan"
     const val EVENT = "event?href={href}&date={date}&time={time}"
 
     /** Baut das Ziel fuer einen neuen oder vorhandenen Termin. */
@@ -104,10 +106,20 @@ fun WochenplanNavigation(navController: NavHostController = rememberNavControlle
                 TaskScreen(
                     onOpenFocus = { navController.navigateToTab(Routes.FOCUS) },
                     onOpenTemplates = { navController.navigate(Routes.TEMPLATES) },
+                    onOpenPlanner = { navController.navigate(Routes.PLAN) },
                 )
             }
             composable(Routes.TEMPLATES) {
                 TemplateScreen(onClose = { navController.popBackStack() })
+            }
+            composable(Routes.PLAN) {
+                PlanScreen(
+                    onClose = { navController.popBackStack() },
+                    onOpenSettings = {
+                        navController.popBackStack()
+                        navController.navigateToTab(Routes.SETTINGS)
+                    },
+                )
             }
             composable(Routes.FOCUS) {
                 FocusScreen()

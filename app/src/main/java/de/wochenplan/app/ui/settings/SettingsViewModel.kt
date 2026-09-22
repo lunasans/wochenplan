@@ -128,6 +128,25 @@ class SettingsViewModel(
         }
     }
 
+    /** Speichert den Schluessel fuer die KI-Planung oder entfernt ihn bei leerer Eingabe. */
+    fun saveAiApiKey(key: String) {
+        viewModelScope.launch {
+            container.settingsStore.saveAiApiKey(key)
+            message.value = if (key.isBlank()) {
+                "KI-Schluessel entfernt." to false
+            } else {
+                "KI-Schluessel gespeichert." to false
+            }
+        }
+    }
+
+    fun clearAiApiKey() {
+        viewModelScope.launch {
+            container.settingsStore.clearAiApiKey()
+            message.value = ("KI-Schluessel entfernt." to false)
+        }
+    }
+
     fun setCalendarVisible(url: String, visible: Boolean) {
         viewModelScope.launch { repository.setCalendarVisible(url, visible) }
     }

@@ -47,6 +47,22 @@ inklusive Pausen.
 - Eingefügte Aufgaben starten immer offen und ohne geleistete Pomodoros
 - Vorlagen liegen auf dem Gerät und lassen sich jederzeit bearbeiten
 
+### Woche von der KI planen lassen (optional)
+- Du schreibst auf, was du dir vornimmst; die App macht daraus einen Vorschlag
+  für die Woche – verteilt auf die Tage, mit geschätzten Pomodoros
+- Die KI sieht dabei deine bereits eingetragenen Termine und die offenen
+  Aufgaben der Woche und plant um sie herum
+- Der Vorschlag wird **immer erst angezeigt**: jeder Eintrag lässt sich einzeln
+  annehmen oder verwerfen. Ohne Bestätigung wird nichts geschrieben
+- Angenommene Einträge landen als Aufgaben in der Woche; Vorschläge mit Uhrzeit
+  können stattdessen als Termin in einen Kalender geschrieben werden
+- Läuft über einen **eigenen API-Schlüssel** von Anthropic (Modell Claude Opus 5).
+  Ohne Schlüssel bleibt die Funktion aus; der Schlüssel wird wie das
+  CalDAV-Passwort verschlüsselt auf dem Gerät abgelegt
+- Bei einer Planung gehen die Titel der Termine und Aufgaben dieser Woche an
+  Anthropic. Die Kosten laufen über dein Konto und liegen pro Planung
+  üblicherweise bei wenigen Cent
+
 ### Pomodoro-Timer mit Pausen
 - Fokus, kurze Pause und lange Pause, alle Längen einstellbar
   (Vorgabe 25 / 5 / 15 Minuten, lange Pause nach 4 Abschnitten)
@@ -108,19 +124,20 @@ Die App kommt ohne Backend aus: Android spricht direkt mit dem CalDAV-Server.
 app/src/main/java/de/wochenplan/app/
 ├── core/          Kalenderwochen (ISO 8601) und Verschlüsselung
 ├── data/
+│   ├── ai/        Wochenplanung per Claude: Anfrage, Auswertung, Prüfung
 │   ├── ical/      iCalendar: Parser, Writer, Serientermine, VTIMEZONE
 │   ├── caldav/    CalDAV über OkHttp, Auswertung der WebDAV-Antworten
 │   ├── db/        Room: Kalender, Terminzwischenspeicher, Aufgaben, Fokuszeiten
 │   ├── prefs/     Einstellungen (DataStore)
 │   └── repo/      Bindeglied zwischen Server, Datenbank und Oberfläche
 ├── pomodoro/      Timer, Vordergrunddienst, Benachrichtigungen
-├── ui/            Jetpack Compose: Woche, Termin, Aufgaben, Vorlagen, Fokus,
-│                  Einstellungen
+├── ui/            Jetpack Compose: Woche, Termin, Aufgaben, Vorlagen,
+│                  KI-Plan, Fokus, Einstellungen
 └── work/          Hintergrundabgleich (WorkManager)
 ```
 
 Technik: Kotlin, Jetpack Compose (Material 3), Room, DataStore, WorkManager,
-OkHttp. Mindestens Android 8.0 (API 26).
+OkHttp, Anthropic-SDK für Java. Mindestens Android 8.0 (API 26).
 
 Schemaänderungen der Datenbank werden migriert statt verworfen. Weil eine
 handgeschriebene Migration erst auf dem Gerät auffällt, wenn sie nicht exakt zu
@@ -133,6 +150,16 @@ Felder bei und ist ohne Gerät testbar. Die kniffligen Stellen – Kalenderwoche
 den Jahreswechsel, Wiederholungsregeln, Zeitumstellung, Terminüberschneidungen –
 sind mit Unit-Tests abgedeckt.
 
+### Zur KI-Planung
+
+Das Zusammenspiel mit der KI ist bewusst so gebaut, dass der unzuverlässige Teil
+geprüft werden kann: Was in die Anfrage geht und wie die Antwort ausgewertet wird,
+sind reine Funktionen mit Unit-Tests. Der Auswerter geht davon aus, dass die
+Antwort nicht dem Format entspricht – er schneidet das JSON aus Fließtext oder
+einem Codeblock heraus, prüft jedes Feld einzeln und macht aus einem Termin ohne
+vollständige Uhrzeit lieber eine Aufgabe, als den Vorschlag stillschweigend
+wegzuwerfen.
+
 ## Bekannte Grenzen
 
 - Serientermine werden immer als Ganzes bearbeitet. Einzelne Termine lassen sich
@@ -143,6 +170,8 @@ sind mit Unit-Tests abgedeckt.
   angeboten.
 - Änderungen brauchen eine Verbindung zum Server; ein Änderungsspeicher für den
   Offline-Betrieb ist nicht eingebaut. Das Ansehen geladener Wochen geht offline.
+- Die KI-Planung braucht einen eigenen API-Schlüssel und eine Internetverbindung.
+  Sie schlägt nur vor; übernommen wird ausschließlich, was du bestätigst.
 - Aufgaben, Vorlagen und Fokuszeiten bleiben auf dem Gerät und werden nicht als
   CalDAV-Aufgaben (`VTODO`) abgeglichen.
 - Vorlagen erzeugen Aufgaben, keine Kalendertermine. Wiederkehrende Termine

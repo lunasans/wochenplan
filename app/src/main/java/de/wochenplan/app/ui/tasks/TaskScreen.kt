@@ -17,6 +17,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.Bookmarks
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.MoveDown
@@ -59,6 +60,7 @@ import de.wochenplan.app.ui.common.Formatters
 fun TaskScreen(
     onOpenFocus: () -> Unit,
     onOpenTemplates: () -> Unit,
+    onOpenPlanner: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: TaskViewModel = viewModel(factory = TaskViewModel.Factory),
 ) {
@@ -116,6 +118,7 @@ fun TaskScreen(
                     focusMinutes = state.focusMinutesThisWeek,
                     onCarryOver = viewModel::carryOverToNextWeek,
                     onOpenTemplates = onOpenTemplates,
+                    onOpenPlanner = onOpenPlanner,
                 )
             }
 
@@ -190,6 +193,7 @@ private fun WeekSummary(
     focusMinutes: Int,
     onCarryOver: () -> Unit,
     onOpenTemplates: () -> Unit,
+    onOpenPlanner: () -> Unit,
 ) {
     Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer)) {
         Column(
@@ -209,6 +213,10 @@ private fun WeekSummary(
                 color = MaterialTheme.colorScheme.onSecondaryContainer,
             )
             Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                TextButton(onClick = onOpenPlanner) {
+                    Icon(Icons.Filled.AutoAwesome, contentDescription = null, modifier = Modifier.size(18.dp))
+                    Text("KI-Plan", Modifier.padding(start = 6.dp))
+                }
                 TextButton(onClick = onOpenTemplates) {
                     Icon(Icons.Filled.Bookmarks, contentDescription = null, modifier = Modifier.size(18.dp))
                     Text("Vorlagen", Modifier.padding(start = 6.dp))

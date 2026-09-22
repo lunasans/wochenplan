@@ -32,6 +32,8 @@ data class AppSettings(
     val keepScreenOn: Boolean = false,
     val defaultCalendarUrl: String? = null,
     val lastSyncAt: Long = 0L,
+    /** Ist ein Schluessel fuer die KI-Planung hinterlegt? */
+    val hasAiKey: Boolean = false,
 ) {
     val isAccountConfigured: Boolean
         get() = serverUrl.isNotBlank() && username.isNotBlank() && hasPassword
@@ -59,6 +61,7 @@ class SettingsStore(private val context: Context) {
             keepScreenOn = preferences[Keys.KEEP_SCREEN_ON] ?: false,
             defaultCalendarUrl = preferences[Keys.DEFAULT_CALENDAR]?.takeIf { it.isNotBlank() },
             lastSyncAt = preferences[Keys.LAST_SYNC_AT] ?: 0L,
+            hasAiKey = !preferences[Keys.AI_API_KEY].isNullOrBlank(),
         )
     }
 
@@ -68,6 +71,27 @@ class SettingsStore(private val context: Context) {
     suspend fun password(): String? {
         val stored = context.dataStore.data.first()[Keys.PASSWORD] ?: return null
         return SecretCipher.decrypt(stored)
+    }
+
+    /** Der entschluesselte Schluessel fuer die KI-Planung, oder `null`. */
+    suspend fun aiApiKey(): String? {
+        val stored = context.dataStore.data.first()[Keys.AI_API_KEY] ?: return null
+        return SecretCipher.decrypt(stored)
+    }
+
+    suspend fun saveAiApiKey(key: String) {
+        context.dataStore.edit { preferences ->
+            val trimmed = key.trim()
+            if (trimmed.isEmpty()) {
+                preferences.remove(Keys.AI_API_KEY)
+            } else {
+                SecretCipher.encrypt(trimmed)?.let { preferences[Keys.AI_API_KEY] = it }
+            }
+        }
+    }
+
+    suspend fun clearAiApiKey() {
+        context.dataStore.edit { it.remove(Keys.AI_API_KEY) }
     }
 
     suspend fun saveAccount(serverUrl: String, username: String, password: String?) {
@@ -143,5 +167,6 @@ class SettingsStore(private val context: Context) {
         val KEEP_SCREEN_ON = booleanPreferencesKey("keep_screen_on")
         val DEFAULT_CALENDAR = stringPreferencesKey("default_calendar")
         val LAST_SYNC_AT = longPreferencesKey("last_sync_at")
+        val AI_API_KEY = stringPreferencesKey("ai_api_key_encrypted")
     }
 }

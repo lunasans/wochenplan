@@ -90,6 +90,8 @@ fun SettingsScreen(
             HorizontalDivider()
             PomodoroSection(state = state, viewModel = viewModel)
             HorizontalDivider()
+            AiSection(state = state, viewModel = viewModel)
+            HorizontalDivider()
             AboutSection(lastSyncAt = state.settings.lastSyncAt)
         }
     }
@@ -317,6 +319,67 @@ private fun PomodoroSection(state: SettingsUiState, viewModel: SettingsViewModel
             label = "Bildschirm waehrend des Timers anlassen",
             checked = state.settings.keepScreenOn,
             onChange = { viewModel.setPomodoro(keepScreenOn = it) },
+        )
+    }
+}
+
+@Composable
+private fun AiSection(state: SettingsUiState, viewModel: SettingsViewModel) {
+    var key by remember { mutableStateOf("") }
+    var showKey by remember { mutableStateOf(false) }
+
+    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        SectionTitle("KI-Planung")
+        Text(
+            text = if (state.settings.hasAiKey) {
+                "Ein Schluessel ist hinterlegt. Die Wochenplanung per KI steht bereit."
+            } else {
+                "Mit einem eigenen API-Schluessel von Anthropic kann die App einen " +
+                    "Wochenvorschlag erstellen. Ohne Schluessel bleibt die Funktion aus."
+            },
+            style = MaterialTheme.typography.bodyMedium,
+        )
+
+        OutlinedTextField(
+            value = key,
+            onValueChange = { key = it },
+            label = { Text(if (state.settings.hasAiKey) "Neuer Schluessel (optional)" else "API-Schluessel") },
+            placeholder = { Text("sk-ant-...") },
+            singleLine = true,
+            visualTransformation = if (showKey) VisualTransformation.None else PasswordVisualTransformation(),
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+            trailingIcon = {
+                IconButton(onClick = { showKey = !showKey }) {
+                    Icon(
+                        imageVector = if (showKey) Icons.Filled.VisibilityOff else Icons.Filled.Visibility,
+                        contentDescription = if (showKey) "Schluessel verbergen" else "Schluessel anzeigen",
+                    )
+                }
+            },
+            modifier = Modifier.fillMaxWidth(),
+        )
+
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Button(
+                onClick = {
+                    viewModel.saveAiApiKey(key)
+                    key = ""
+                },
+                enabled = key.isNotBlank(),
+            ) { Text("Schluessel speichern") }
+
+            if (state.settings.hasAiKey) {
+                OutlinedButton(onClick = viewModel::clearAiApiKey) { Text("Entfernen") }
+            }
+        }
+
+        Text(
+            text = "Der Schluessel wird wie das CalDAV-Passwort verschluesselt auf dem Geraet " +
+                "abgelegt. Bei einer Planung gehen die Titel der Termine und Aufgaben dieser " +
+                "Woche an Anthropic; die Kosten laufen ueber dein eigenes Konto. Eine Planung " +
+                "kostet ueblicherweise wenige Cent.",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
     }
 }
