@@ -229,16 +229,7 @@ private fun CalendarSelector(
             readOnly = true,
             enabled = enabled,
             label = { Text("Kalender") },
-            leadingIcon = selected?.let { calendar ->
-                {
-                    Box(
-                        Modifier
-                            .size(14.dp)
-                            .clip(CircleShape)
-                            .background(CalendarColors.resolve(calendar.color, calendar.url))
-                    )
-                }
-            },
+            leadingIcon = { selected?.let { calendar -> CalendarDot(calendar) } },
             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
             modifier = Modifier
                 .fillMaxWidth()
@@ -248,14 +239,7 @@ private fun CalendarSelector(
             for (calendar in calendars) {
                 DropdownMenuItem(
                     text = { Text(calendar.displayName) },
-                    leadingIcon = {
-                        Box(
-                            Modifier
-                                .size(14.dp)
-                                .clip(CircleShape)
-                                .background(CalendarColors.resolve(calendar.color, calendar.url))
-                        )
-                    },
+                    leadingIcon = { CalendarDot(calendar) },
                     onClick = {
                         onSelect(calendar.url)
                         expanded = false
@@ -264,6 +248,17 @@ private fun CalendarSelector(
             }
         }
     }
+}
+
+/** Der Farbpunkt eines Kalenders. */
+@Composable
+private fun CalendarDot(calendar: de.wochenplan.app.data.db.CalendarEntity) {
+    Box(
+        Modifier
+            .size(14.dp)
+            .clip(CircleShape)
+            .background(CalendarColors.resolve(calendar.color, calendar.url))
+    )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
