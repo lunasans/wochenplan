@@ -76,6 +76,27 @@ class RecurrenceTest {
 
     @Test
     fun `UNTIL beendet die Serie`() {
+        // UNTIL steht in UTC; entscheidend ist der Tag in der Zeitzone des Termins.
+        val rule = RecurrenceRule.parse("FREQ=DAILY;UNTIL=20260923T120000Z", zone)!!
+        val dates = RecurrenceExpander.expandDates(
+            start = LocalDate.of(2026, 9, 21),
+            rule = rule,
+            maxDate = LocalDate.of(2026, 12, 31),
+            untilDate = rule.until?.toLocalDate(zone),
+        )
+        assertEquals(
+            listOf(
+                LocalDate.of(2026, 9, 21),
+                LocalDate.of(2026, 9, 22),
+                LocalDate.of(2026, 9, 23),
+            ),
+            dates,
+        )
+    }
+
+    @Test
+    fun `UNTIL kurz nach Mitternacht UTC zaehlt noch zum Folgetag in Berlin`() {
+        // 23:59 UTC am 23. ist in Berlin bereits der 24. um 01:59.
         val rule = RecurrenceRule.parse("FREQ=DAILY;UNTIL=20260923T235900Z", zone)!!
         val dates = RecurrenceExpander.expandDates(
             start = LocalDate.of(2026, 9, 21),
@@ -83,7 +104,7 @@ class RecurrenceTest {
             maxDate = LocalDate.of(2026, 12, 31),
             untilDate = rule.until?.toLocalDate(zone),
         )
-        assertEquals(3, dates.size)
+        assertEquals(LocalDate.of(2026, 9, 24), dates.last())
     }
 
     @Test

@@ -63,11 +63,12 @@ object VTimeZoneFactory {
 
         val indicator = rule.dayOfMonthIndicator
         val lengthOfMonth = rule.month.length(false)
-        // Ein Indikator, ab dem keine volle Woche mehr in den Monat passt,
-        // meint den letzten Wochentag dieser Art im Monat.
+        // Der Indikator meint "der erste solche Wochentag ab diesem Tag". Passt
+        // danach keine weitere Woche mehr in den Monat, ist es der letzte seiner
+        // Art: Der 25. Maerz trifft so immer den letzten Sonntag (25 + 7 > 31).
         val ordinal = when {
             indicator < 0 -> -1
-            indicator + 6 > lengthOfMonth -> -1
+            indicator + 7 > lengthOfMonth -> -1
             else -> ((indicator - 1) / 7) + 1
         }
         val code = ByDay.DAY_CODES.getValue(dayOfWeek)

@@ -35,8 +35,10 @@ class IsoWeekTest {
 
     @Test
     fun `Jahre mit 53 Wochen werden erkannt`() {
+        // Lange Jahre beginnen an einem Donnerstag oder sind Schaltjahre, die
+        // an einem Mittwoch beginnen.
         assertEquals(53, IsoWeek.weeksInYear(2020))
-        assertEquals(52, IsoWeek.weeksInYear(2026))
+        assertEquals(53, IsoWeek.weeksInYear(2026))
         assertEquals(52, IsoWeek.weeksInYear(2025))
     }
 
