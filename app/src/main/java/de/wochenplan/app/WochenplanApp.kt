@@ -9,6 +9,7 @@ import de.wochenplan.app.data.prefs.SettingsStore
 import de.wochenplan.app.data.repo.CalendarRepository
 import de.wochenplan.app.data.repo.FocusRepository
 import de.wochenplan.app.data.repo.TaskRepository
+import de.wochenplan.app.data.repo.TaskTemplateRepository
 import de.wochenplan.app.pomodoro.PomodoroEngine
 import de.wochenplan.app.pomodoro.PomodoroNotifications
 import de.wochenplan.app.work.WeekSyncWorker
@@ -52,6 +53,10 @@ class AppContainer(context: Context) {
     val taskRepository: TaskRepository by lazy { TaskRepository(database.taskDao()) }
 
     val focusRepository: FocusRepository by lazy { FocusRepository(database.focusSessionDao()) }
+
+    val taskTemplateRepository: TaskTemplateRepository by lazy {
+        TaskTemplateRepository(database.taskTemplateDao(), database.taskDao())
+    }
 
     val pomodoroEngine: PomodoroEngine by lazy {
         PomodoroEngine(

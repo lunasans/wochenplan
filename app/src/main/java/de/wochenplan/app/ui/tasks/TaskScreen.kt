@@ -17,6 +17,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Bookmarks
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.MoveDown
 import androidx.compose.material.icons.filled.PlayArrow
@@ -57,6 +58,7 @@ import de.wochenplan.app.ui.common.Formatters
 @Composable
 fun TaskScreen(
     onOpenFocus: () -> Unit,
+    onOpenTemplates: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: TaskViewModel = viewModel(factory = TaskViewModel.Factory),
 ) {
@@ -113,6 +115,7 @@ fun TaskScreen(
                     plannedPomodoros = state.plannedPomodoros,
                     focusMinutes = state.focusMinutesThisWeek,
                     onCarryOver = viewModel::carryOverToNextWeek,
+                    onOpenTemplates = onOpenTemplates,
                 )
             }
 
@@ -186,6 +189,7 @@ private fun WeekSummary(
     plannedPomodoros: Int,
     focusMinutes: Int,
     onCarryOver: () -> Unit,
+    onOpenTemplates: () -> Unit,
 ) {
     Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer)) {
         Column(
@@ -204,10 +208,16 @@ private fun WeekSummary(
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSecondaryContainer,
             )
-            if (openTasks > 0) {
-                TextButton(onClick = onCarryOver) {
-                    Icon(Icons.Filled.MoveDown, contentDescription = null, modifier = Modifier.size(18.dp))
-                    Text("Offene in naechste Woche", Modifier.padding(start = 8.dp))
+            Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                TextButton(onClick = onOpenTemplates) {
+                    Icon(Icons.Filled.Bookmarks, contentDescription = null, modifier = Modifier.size(18.dp))
+                    Text("Vorlagen", Modifier.padding(start = 6.dp))
+                }
+                if (openTasks > 0) {
+                    TextButton(onClick = onCarryOver) {
+                        Icon(Icons.Filled.MoveDown, contentDescription = null, modifier = Modifier.size(18.dp))
+                        Text("Naechste Woche", Modifier.padding(start = 6.dp))
+                    }
                 }
             }
         }

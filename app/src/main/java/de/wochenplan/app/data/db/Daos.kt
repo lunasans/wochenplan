@@ -91,6 +91,9 @@ interface TaskDao {
     @Query("SELECT * FROM tasks WHERE weekKey = :weekKey AND done = 0 ORDER BY weekday IS NULL, weekday, sortIndex, id")
     suspend fun openTasksOfWeek(weekKey: String): List<TaskEntity>
 
+    @Query("SELECT * FROM tasks WHERE weekKey = :weekKey ORDER BY weekday IS NULL, weekday, sortIndex, id")
+    suspend fun tasksOfWeek(weekKey: String): List<TaskEntity>
+
     @Query("SELECT * FROM tasks WHERE id = :id")
     suspend fun byId(id: Long): TaskEntity?
 
@@ -133,4 +136,64 @@ interface FocusSessionDao {
             "WHERE phase = 'FOCUS' AND completed = 1 AND startedAt >= :from AND startedAt < :to"
     )
     fun observeFocusMinutes(from: Long, to: Long): Flow<Int>
+}
+
+@Dao
+abstract class TaskTemplateDao {
+
+    @Transaction
+    @Query("SELECT * FROM task_templates ORDER BY sortIndex, name COLLATE NOCASE")
+    abstract fun observeAll(): Flow<List<TaskTemplateWithItems>>
+
+    @Transaction
+    @Query("SELECT * FROM task_templates WHERE id = :id")
+    abstract suspend fun byId(id: Long): TaskTemplateWithItems?
+
+    @Insert
+    abstract suspend fun insertTemplate(template: TaskTemplateEntity): Long
+
+    @Update
+    abstract suspend fun updateTemplate(template: TaskTemplateEntity)
+
+    @Insert
+    abstract suspend fun insertItems(items: List<TaskTemplateItemEntity>)
+
+    @Query("DELETE FROM task_template_items WHERE templateId = :templateId")
+    abstract suspend fun deleteItems(templateId: Long)
+
+    @Query("DELETE FROM task_templates WHERE id = :id")
+    abstract suspend fun deleteTemplate(id: Long)
+
+    @Query("UPDATE task_templates SET lastUsedAt = :timestamp WHERE id = :id")
+    abstract suspend fun markUsed(id: Long, timestamp: Long)
+
+    @Query("SELECT COALESCE(MAX(sortIndex), 0) FROM task_templates")
+    abstract suspend fun maxSortIndex(): Int
+
+    /**
+     * Legt eine Vorlage an oder aktualisiert sie. Die Eintraege werden dabei
+     * komplett ersetzt, damit Reihenfolge und Loeschungen sicher uebernommen
+     * werden.
+     */
+    @Transaction
+    open suspend fun saveWithItems(
+        template: TaskTemplateEntity,
+        items: List<TaskTemplateItemEntity>,
+    ): Long {
+        val templateId = if (template.id == 0L) {
+            insertTemplate(template)
+        } else {
+            updateTemplate(template)
+            template.id
+        }
+        deleteItems(templateId)
+        if (items.isNotEmpty()) {
+            insertItems(
+                items.mapIndexed { index, item ->
+                    item.copy(id = 0, templateId = templateId, sortIndex = index)
+                }
+            )
+        }
+        return templateId
+    }
 }

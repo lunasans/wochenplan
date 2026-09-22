@@ -1,8 +1,11 @@
 package de.wochenplan.app.data.db
 
+import androidx.room.Embedded
 import androidx.room.Entity
+import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
+import androidx.room.Relation
 
 /** Ein Kalender vom CalDAV-Server, samt lokaler Anzeigeeinstellungen. */
 @Entity(tableName = "calendars")
@@ -69,3 +72,56 @@ data class FocusSessionEntity(
     /** `false`, wenn der Abschnitt vorzeitig abgebrochen wurde. */
     val completed: Boolean,
 )
+
+/**
+ * Eine Vorlage fuer wiederkehrende Aufgaben, z.B. "Standardwoche" oder
+ * "Monatsabschluss". Eine Vorlage mit einem einzigen Eintrag ist die Vorlage
+ * fuer eine einzelne Aufgabe.
+ */
+@Entity(tableName = "task_templates")
+data class TaskTemplateEntity(
+    @PrimaryKey(autoGenerate = true) val id: Long = 0,
+    val name: String,
+    val description: String? = null,
+    val sortIndex: Int = 0,
+    val createdAt: Long = System.currentTimeMillis(),
+    /** Wann die Vorlage zuletzt angewendet wurde. */
+    val lastUsedAt: Long? = null,
+)
+
+/** Eine Aufgabe innerhalb einer Vorlage. */
+@Entity(
+    tableName = "task_template_items",
+    foreignKeys = [
+        ForeignKey(
+            entity = TaskTemplateEntity::class,
+            parentColumns = ["id"],
+            childColumns = ["templateId"],
+            onDelete = ForeignKey.CASCADE,
+        ),
+    ],
+    indices = [Index("templateId")],
+)
+data class TaskTemplateItemEntity(
+    @PrimaryKey(autoGenerate = true) val id: Long = 0,
+    val templateId: Long,
+    val title: String,
+    val notes: String? = null,
+    /** 1 = Montag bis 7 = Sonntag, `null` fuer Aufgaben ohne festen Tag. */
+    val weekday: Int? = null,
+    val plannedPomodoros: Int = 1,
+    val sortIndex: Int = 0,
+)
+
+/** Eine Vorlage mit ihren Eintraegen. */
+data class TaskTemplateWithItems(
+    @Embedded val template: TaskTemplateEntity,
+    @Relation(parentColumn = "id", entityColumn = "templateId")
+    val items: List<TaskTemplateItemEntity>,
+) {
+    /** Die Eintraege in der vom Benutzer festgelegten Reihenfolge. */
+    val orderedItems: List<TaskTemplateItemEntity>
+        get() = items.sortedWith(compareBy({ it.sortIndex }, { it.id }))
+
+    val plannedPomodoros: Int get() = items.sumOf { it.plannedPomodoros }
+}

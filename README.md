@@ -36,6 +36,17 @@ inklusive Pausen.
 - Geplante Pomodoros je Aufgabe, erledigte werden mitgezählt
 - Offene Aufgaben mit einem Tipp in die nächste Woche übernehmen
 
+### Vorlagen für wiederkehrende Aufgaben
+- Eine Vorlage ist ein benannter Satz Aufgaben, jeweils mit Wochentag und
+  geplanten Pomodoros – etwa „Standardwoche" oder „Monatsabschluss".
+  Eine Vorlage mit einem einzigen Eintrag ist die Vorlage für eine einzelne Aufgabe.
+- Mit einem Tipp in die gerade geöffnete Kalenderwoche einfügen; vorhandene
+  Aufgaben der Woche bleiben unberührt
+- Eine fertig geplante Woche lässt sich als Vorlage speichern
+  („KW 39 als Vorlage speichern") und später wiederverwenden
+- Eingefügte Aufgaben starten immer offen und ohne geleistete Pomodoros
+- Vorlagen liegen auf dem Gerät und lassen sich jederzeit bearbeiten
+
 ### Pomodoro-Timer mit Pausen
 - Fokus, kurze Pause und lange Pause, alle Längen einstellbar
   (Vorgabe 25 / 5 / 15 Minuten, lange Pause nach 4 Abschnitten)
@@ -103,12 +114,18 @@ app/src/main/java/de/wochenplan/app/
 │   ├── prefs/     Einstellungen (DataStore)
 │   └── repo/      Bindeglied zwischen Server, Datenbank und Oberfläche
 ├── pomodoro/      Timer, Vordergrunddienst, Benachrichtigungen
-├── ui/            Jetpack Compose: Woche, Termin, Aufgaben, Fokus, Einstellungen
+├── ui/            Jetpack Compose: Woche, Termin, Aufgaben, Vorlagen, Fokus,
+│                  Einstellungen
 └── work/          Hintergrundabgleich (WorkManager)
 ```
 
 Technik: Kotlin, Jetpack Compose (Material 3), Room, DataStore, WorkManager,
 OkHttp. Mindestens Android 8.0 (API 26).
+
+Schemaänderungen der Datenbank werden migriert statt verworfen. Weil eine
+handgeschriebene Migration erst auf dem Gerät auffällt, wenn sie nicht exakt zu
+den Entitäten passt, vergleicht ein Unit-Test sie mit dem Schema, das Room beim
+Übersetzen erzeugt.
 
 Der iCalendar-Teil ist bewusst selbst geschrieben statt als Bibliothek eingebunden:
 Er umfasst nur die für VEVENT nötige Teilmenge, behält beim Schreiben unbekannte
@@ -126,5 +143,7 @@ sind mit Unit-Tests abgedeckt.
   angeboten.
 - Änderungen brauchen eine Verbindung zum Server; ein Änderungsspeicher für den
   Offline-Betrieb ist nicht eingebaut. Das Ansehen geladener Wochen geht offline.
-- Aufgaben und Fokuszeiten bleiben auf dem Gerät und werden nicht als
+- Aufgaben, Vorlagen und Fokuszeiten bleiben auf dem Gerät und werden nicht als
   CalDAV-Aufgaben (`VTODO`) abgeglichen.
+- Vorlagen erzeugen Aufgaben, keine Kalendertermine. Wiederkehrende Termine
+  gehören als Serientermin in den Kalender.

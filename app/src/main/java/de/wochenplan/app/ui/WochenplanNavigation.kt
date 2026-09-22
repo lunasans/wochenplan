@@ -29,6 +29,7 @@ import de.wochenplan.app.ui.event.EventEditViewModel
 import de.wochenplan.app.ui.focus.FocusScreen
 import de.wochenplan.app.ui.settings.SettingsScreen
 import de.wochenplan.app.ui.tasks.TaskScreen
+import de.wochenplan.app.ui.templates.TemplateScreen
 import de.wochenplan.app.ui.week.WeekScreen
 import java.time.LocalDate
 import java.time.LocalTime
@@ -38,6 +39,7 @@ object Routes {
     const val TASKS = "tasks"
     const val FOCUS = "focus"
     const val SETTINGS = "settings"
+    const val TEMPLATES = "templates"
     const val EVENT = "event?href={href}&date={date}&time={time}"
 
     /** Baut das Ziel fuer einen neuen oder vorhandenen Termin. */
@@ -99,7 +101,13 @@ fun WochenplanNavigation(navController: NavHostController = rememberNavControlle
                 )
             }
             composable(Routes.TASKS) {
-                TaskScreen(onOpenFocus = { navController.navigateToTab(Routes.FOCUS) })
+                TaskScreen(
+                    onOpenFocus = { navController.navigateToTab(Routes.FOCUS) },
+                    onOpenTemplates = { navController.navigate(Routes.TEMPLATES) },
+                )
+            }
+            composable(Routes.TEMPLATES) {
+                TemplateScreen(onClose = { navController.popBackStack() })
             }
             composable(Routes.FOCUS) {
                 FocusScreen()
