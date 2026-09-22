@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<full-backup-content>
+    <include domain="database" path="." />
+    <!--
+        Das CalDAV-Passwort ist mit einem Schluessel aus dem Android-Keystore
+        verschluesselt. Der Schluessel bleibt auf dem Geraet, ein gesichertes
+        Passwort waere anderswo also ohnehin nicht lesbar.
+    -->
+    <exclude domain="file" path="datastore/" />
+</full-backup-content>
