@@ -36,22 +36,22 @@ jobs:
       - name: Unit-Tests ausfuehren
         run: |
           set -o pipefail
-          ./gradlew testDebugUnitTest 2>&1 | tee gradle-tests.log && exit 0
-          status=$?
-          echo "::group::Fehler aus den Unit-Tests"
-          grep -E "^(e|w): |FAILED$| > .*(FAILED|AssertionError|expected:)" gradle-tests.log | head -n 120
-          echo "::endgroup::"
-          exit $status
+          # "if !" statt "&&": Steps laufen mit bash -e und wuerden sonst
+          # abbrechen, bevor die Zusammenfassung ausgegeben wird.
+          if ! ./gradlew testDebugUnitTest 2>&1 | tee gradle-tests.log; then
+            echo "===== Fehler aus den Unit-Tests ====="
+            grep -E "^(e|w): |FAILED|AssertionError|expected:" gradle-tests.log | head -n 120
+            exit 1
+          fi
 
       - name: Debug-APK bauen
         run: |
           set -o pipefail
-          ./gradlew assembleDebug 2>&1 | tee gradle-build.log && exit 0
-          status=$?
-          echo "::group::Fehler aus dem Build"
-          grep -E "^(e|w): |FAILED$" gradle-build.log | head -n 120
-          echo "::endgroup::"
-          exit $status
+          if ! ./gradlew assembleDebug 2>&1 | tee gradle-build.log; then
+            echo "===== Fehler aus dem Build ====="
+            grep -E "^(e|w): |FAILED" gradle-build.log | head -n 120
+            exit 1
+          fi
 
       - name: Testberichte sichern
         if: always()
