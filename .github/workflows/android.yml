@@ -1,0 +1,72 @@
+name: Android
+
+on:
+  push:
+    branches:
+      - main
+      - "claude/**"
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Tests und Debug-APK
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Quellcode auschecken
+        uses: actions/checkout@v4
+
+      - name: JDK 17 einrichten
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Gradle einrichten
+        uses: gradle/actions/setup-gradle@v4
+
+      # Der Gradle-Stacktrace ist hunderte Zeilen lang und verdeckt die
+      # eigentlichen Meldungen. Darum werden Fehler herausgefiltert und ganz
+      # zum Schluss noch einmal kompakt ausgegeben.
+      - name: Unit-Tests ausfuehren
+        run: |
+          set -o pipefail
+          # "if !" statt "&&": Steps laufen mit bash -e und wuerden sonst
+          # abbrechen, bevor die Zusammenfassung ausgegeben wird.
+          if ! ./gradlew testDebugUnitTest 2>&1 | tee gradle-tests.log; then
+            echo "===== Fehler aus den Unit-Tests ====="
+            grep -E "^(e|w): |FAILED|AssertionError|expected:" gradle-tests.log | head -n 120
+            exit 1
+          fi
+
+      - name: Debug-APK bauen
+        run: |
+          set -o pipefail
+          if ! ./gradlew assembleDebug 2>&1 | tee gradle-build.log; then
+            echo "===== Fehler aus dem Build ====="
+            grep -E "^(e|w): |FAILED" gradle-build.log | head -n 120
+            exit 1
+          fi
+
+      - name: Testberichte sichern
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: testberichte
+          path: |
+            app/build/reports/tests/
+            gradle-tests.log
+            gradle-build.log
+          if-no-files-found: ignore
+
+      - name: APK sichern
+        uses: actions/upload-artifact@v4
+        with:
+          name: wochenplan-debug-apk
+          path: app/build/outputs/apk/debug/*.apk
+          if-no-files-found: error

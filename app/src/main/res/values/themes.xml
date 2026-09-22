@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--
+        Die Oberflaeche ist vollstaendig in Compose gebaut; dieses Theme setzt nur
+        den Hintergrund, bevor Compose uebernimmt, damit es beim Start nicht blitzt.
+    -->
+    <style name="Theme.Wochenplan" parent="@android:style/Theme.Material.Light.NoActionBar">
+        <item name="android:windowBackground">@color/window_background</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+    </style>
+</resources>

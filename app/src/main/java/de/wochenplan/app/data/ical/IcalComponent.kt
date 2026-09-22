@@ -134,7 +134,7 @@ object IcalText {
         for (char in value) {
             when (char) {
                 '\\' -> append("\\\\")
-                ';' -> append("\;")
+                ';' -> append("\\;")
                 ',' -> append("\\,")
                 '\n' -> append("\\n")
                 '\r' -> Unit

@@ -3,6 +3,7 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.ksp)
+    alias(libs.plugins.kotlin.serialization)
 }
 
 android {
@@ -46,6 +47,13 @@ android {
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
+            // Der Anthropic-SDK bringt Apache HttpComponents mit. Deren Jars
+            // tragen alle dieselben Metadateien, die beim Zusammenfuehren
+            // kollidieren; fuer die App haben sie keine Bedeutung.
+            excludes += "/META-INF/DEPENDENCIES"
+            excludes += "/META-INF/INDEX.LIST"
+            excludes += "/META-INF/LICENSE*"
+            excludes += "/META-INF/NOTICE*"
         }
     }
 }
@@ -79,6 +87,8 @@ dependencies {
     implementation(libs.androidx.datastore.preferences)
     implementation(libs.androidx.work.runtime.ktx)
     implementation(libs.okhttp)
+    implementation(libs.kotlinx.serialization.json)
+    implementation(libs.anthropic.java)
 
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)
